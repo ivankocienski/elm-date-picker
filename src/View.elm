@@ -3,11 +3,10 @@ module View exposing (renderPageBody, titleForPage)
 import Model exposing (Model)
 import Message exposing (Msg(..))
 
-import Html exposing (Html, h1, text, hr, h2, form, fieldset, label, input, button, p, main_, div, pre)
-import Html.Attributes exposing (type_, value, disabled, class, placeholder)
+import Html exposing (Html, h1, text, hr, h2, form, fieldset, label, input, button, span, main_, div, pre)
+import Html.Attributes exposing (type_, value, disabled, class, placeholder, style)
 import Html.Events exposing (onSubmit, onInput)
 import Date
-import Html.Attributes exposing (placeholder)
 import Bits.Form as Form
 import Bits.DatePicker exposing (dateSelectWidget, DateSelectorMsg(..))
 
@@ -70,14 +69,14 @@ demoFormWidget model =
         ]
       ]
     ]
-  , fieldset [ class "field is-horizontal" ]
+  , fieldset [ class "field" ]
     -- title
     [ label [ class "label" ] [ text "Title" ]
     , div [ class "control" ]
           [ input
             [ class "input"
             , type_ "text"
-            , onInput (FormUpdateValue "date")
+            , onInput (FormUpdateValue "title")
             , value titleValue
             , placeholder "Title value"
             ]
@@ -85,14 +84,14 @@ demoFormWidget model =
           ]
     ]
   , fieldset [ class "field" ]
-    [ p [] [ text (if submitDisableValue then "invalid" else "very valid")]
-    , div [ class "control" ]
+    [ div [ class "control", style "display" "flex", style "align-items" "center", style "gap" "1rem" ]
       [ button
         [ class "button is-link"
         , type_ "submit"
         , disabled submitDisableValue
         ]
         [ text "Submit!" ]
+      , span [] [ text (if submitDisableValue then "invalid" else "very valid")]
       ]
     ]
   ]

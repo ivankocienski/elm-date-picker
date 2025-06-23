@@ -7,7 +7,7 @@ import Message exposing (Msg(..))
 import Model exposing (Model, makeModel)
 import View
 import Bits.Form as Form
-import Bits.DatePicker exposing (updateDateSelector, selectDateFromDateSelector, DateSelectorMsg)
+import Bits.DatePicker exposing (updateDateSelector, selectDateFromDateSelector)
 import Date
 import Task
 import Platform.Cmd as Cmd
@@ -20,8 +20,16 @@ init _ _ navKey =
     )
 
 prettyPrintDemoForm : Form.Form -> String
-prettyPrintDemoForm _ =
-    "Time=" -- ++ form.demoForm
+prettyPrintDemoForm form =
+    let
+        parts =
+            [ "Start : " ++ (Form.formValue form "startDate" "")
+            , "End : " ++ (Form.formValue form "endDate" "")
+            , "Title : " ++ (Form.formValue form "title" "")
+            ]
+    in
+        (String.join "\n" parts) ++ "\n\n"
+
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
