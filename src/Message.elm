@@ -1,7 +1,8 @@
 module Message exposing (Msg(..))
 
-import Date
 import Bits.DatePicker exposing (DateSelectorMsg(..))
+import Date
+
 
 type Msg
     = ReceiveDate Date.Date

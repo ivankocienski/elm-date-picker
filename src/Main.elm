@@ -1,17 +1,15 @@
 module Main exposing (main)
 
+import Bits.DatePicker exposing (selectDateFromDateSelector, updateDateSelector)
+import Bits.Form as Form
 import Browser
-import Url
-import Browser.Navigation as Nav
+import Date
 import Message exposing (Msg(..))
 import Model exposing (Model, makeModel)
-import View
-import Bits.Form as Form
-import Bits.DatePicker exposing (updateDateSelector, selectDateFromDateSelector)
-import Date
+import Platform.Cmd as Cmd
 import Task
-import Platform.Cmd as Cmd
-import Platform.Cmd as Cmd
+import View
+
 
 init : flags -> ( Model, Cmd Msg )
 init _ =
@@ -19,16 +17,17 @@ init _ =
     , Date.today |> Task.perform ReceiveDate
     )
 
+
 prettyPrintDemoForm : Form.Form -> String
 prettyPrintDemoForm form =
     let
         parts =
-            [ "Start : " ++ (Form.formValue form "startDate" "")
-            , "End : " ++ (Form.formValue form "endDate" "")
-            , "Title : " ++ (Form.formValue form "title" "")
+            [ "Start : " ++ Form.formValue form "startDate" ""
+            , "End : " ++ Form.formValue form "endDate" ""
+            , "Title : " ++ Form.formValue form "title" ""
             ]
     in
-        (String.join "\n" parts) ++ "\n\n"
+    String.join "\n" parts ++ "\n\n"
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -46,27 +45,28 @@ update msg model =
 
         AddDemoDataSubmit ->
             ( { model
-              | output = (model.output ++ (prettyPrintDemoForm model.demoForm))
-              , demoForm = Form.emptyForm
+                | output = model.output ++ prettyPrintDemoForm model.demoForm
+                , demoForm = Form.emptyForm
               }
-            , Cmd.none)
+            , Cmd.none
+            )
 
         StartDateSelector selectorMsg ->
             let
-              newModel =
-                selectDateFromDateSelector
-                  selectorMsg
-                  model
-                  (\newDate appModel ->
-                    { appModel
-                    | demoForm = Form.updateFormValue appModel.demoForm "startDate" <| Date.toIsoString newDate
-                    }
-                  )
-              defaultDate =
-                  Form.formValue model.demoForm "startDate" ""
-                  |> Date.fromIsoString
-                  |> Result.withDefault model.today
+                newModel =
+                    selectDateFromDateSelector
+                        selectorMsg
+                        model
+                        (\newDate appModel ->
+                            { appModel
+                                | demoForm = Form.updateFormValue appModel.demoForm "startDate" <| Date.toIsoString newDate
+                            }
+                        )
 
+                defaultDate =
+                    Form.formValue model.demoForm "startDate" ""
+                        |> Date.fromIsoString
+                        |> Result.withDefault model.today
             in
             ( { newModel | startDateSelector = updateDateSelector selectorMsg model.startDateSelector defaultDate }
             , Cmd.none
@@ -74,20 +74,20 @@ update msg model =
 
         EndDateSelector selectorMsg ->
             let
-              newModel =
-                selectDateFromDateSelector
-                  selectorMsg
-                  model
-                  (\newDate appModel ->
-                    { appModel
-                    | demoForm = Form.updateFormValue appModel.demoForm "endDate" <| Date.toIsoString newDate
-                    }
-                  )
-              defaultDate =
-                  Form.formValue model.demoForm "endDate" ""
-                  |> Date.fromIsoString
-                  |> Result.withDefault model.today
+                newModel =
+                    selectDateFromDateSelector
+                        selectorMsg
+                        model
+                        (\newDate appModel ->
+                            { appModel
+                                | demoForm = Form.updateFormValue appModel.demoForm "endDate" <| Date.toIsoString newDate
+                            }
+                        )
 
+                defaultDate =
+                    Form.formValue model.demoForm "endDate" ""
+                        |> Date.fromIsoString
+                        |> Result.withDefault model.today
             in
             ( { newModel | endDateSelector = updateDateSelector selectorMsg model.endDateSelector defaultDate }
             , Cmd.none
