@@ -13,9 +13,9 @@ import Task
 import Platform.Cmd as Cmd
 import Platform.Cmd as Cmd
 
-init : flags -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
-init _ _ navKey =
-    ( makeModel navKey
+init : flags -> ( Model, Cmd Msg )
+init _ =
+    ( makeModel
     , Date.today |> Task.perform ReceiveDate
     )
 
@@ -34,19 +34,6 @@ prettyPrintDemoForm form =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        LinkClicked urlRequest ->
-            case urlRequest of
-                Browser.Internal url ->
-                    ( model, Nav.pushUrl model.navKey (Url.toString url) )
-
-                Browser.External href ->
-                    ( model, Nav.load href )
-
-        UrlChanged _ ->
-            ( model
-            , Cmd.none
-            )
-
         ReceiveDate date ->
             ( { model | today = date }
             , Cmd.none
@@ -116,11 +103,9 @@ view model =
 
 main : Program () Model Msg
 main =
-    Browser.application
+    Browser.document
         { init = init
         , view = view
         , update = update
         , subscriptions = \_ -> Sub.none
-        , onUrlChange = UrlChanged
-        , onUrlRequest = LinkClicked
         }
