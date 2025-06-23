@@ -4,19 +4,24 @@ import Browser
 import Url
 import Browser.Navigation as Nav
 import Message exposing (Msg(..))
-import Model exposing (Model, makeModel, makeTimeBlockFromForm)
+import Model exposing (Model, makeModel)
 import View
-import Model exposing (TimeBlock)
 import Bits.Form as Form
-import Bits.DatePicker exposing (updateDateSelector, selectDateFromDateSelector)
+import Bits.DatePicker exposing (updateDateSelector, selectDateFromDateSelector, DateSelectorMsg)
 import Date
 import Task
+import Platform.Cmd as Cmd
+import Platform.Cmd as Cmd
 
 init : flags -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
 init _ _ navKey =
     ( makeModel navKey
     , Date.today |> Task.perform ReceiveDate
     )
+
+prettyPrintDemoForm : Form.Form -> String
+prettyPrintDemoForm _ =
+    "Time=" -- ++ form.demoForm
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
@@ -40,24 +45,18 @@ update msg model =
             )
 
         FormUpdateValue key value ->
-            ( { model | timeBlockForm = Form.updateFormValue model.timeBlockForm key value }
+            ( { model | demoForm = Form.updateFormValue model.demoForm key value }
             , Cmd.none
             )
 
-        AddTimeBlockSubmit ->
-            let
-                newTimeBlock : TimeBlock
-                newTimeBlock =
-                  makeTimeBlockFromForm model.timeBlockForm
-
-            in
+        AddDemoDataSubmit ->
             ( { model
-              | timeBlocks = newTimeBlock :: model.timeBlocks
-              , timeBlockForm = Form.emptyForm
+              | output = (model.output ++ (prettyPrintDemoForm model.demoForm))
+              , demoForm = Form.emptyForm
               }
             , Cmd.none)
 
-        DateSelector selectorMsg ->
+        StartDateSelector selectorMsg ->
             let
               newModel =
                 selectDateFromDateSelector
@@ -65,19 +64,39 @@ update msg model =
                   model
                   (\newDate appModel ->
                     { appModel
-                    | timeBlockForm = Form.updateFormValue appModel.timeBlockForm "date" <| Date.toIsoString newDate
+                    | demoForm = Form.updateFormValue appModel.demoForm "startDate" <| Date.toIsoString newDate
                     }
                   )
               defaultDate =
-                  Form.formValue model.timeBlockForm "date" ""
+                  Form.formValue model.demoForm "startDate" ""
                   |> Date.fromIsoString
                   |> Result.withDefault model.today
 
+            in
+            ( { newModel | startDateSelector = updateDateSelector selectorMsg model.startDateSelector defaultDate }
+            , Cmd.none
+            )
+
+        EndDateSelector selectorMsg ->
+            let
+              newModel =
+                selectDateFromDateSelector
+                  selectorMsg
+                  model
+                  (\newDate appModel ->
+                    { appModel
+                    | demoForm = Form.updateFormValue appModel.demoForm "endDate" <| Date.toIsoString newDate
+                    }
+                  )
+              defaultDate =
+                  Form.formValue model.demoForm "endDate" ""
+                  |> Date.fromIsoString
+                  |> Result.withDefault model.today
 
             in
-              ( { newModel | dateSelector = updateDateSelector selectorMsg model.dateSelector defaultDate }
-              , Cmd.none
-              )
+            ( { newModel | endDateSelector = updateDateSelector selectorMsg model.endDateSelector defaultDate }
+            , Cmd.none
+            )
 
 
 view : Model -> Browser.Document Msg

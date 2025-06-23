@@ -1,15 +1,10 @@
 module Bits.DatePicker exposing (dateSelectWidget, DateSelectorMsg, updateDateSelector, selectDateFromDateSelector)
 
 import Html exposing (Html, text, button, table, thead, tbody, tr, th, td, div, span, h6)
-import Html.Attributes exposing (type_, disabled, class, style, id)
+import Html.Attributes exposing (type_, disabled, class, style)
 import Html.Events exposing (onClick)
-
-import Model exposing (Model)
--- import Message exposing (Msg(..))
 import Bits.Icons exposing (calendarIcon)
 import Date
--- import Message exposing(Msg(..))
--- DateSelectorMsg
 
 type DateSelectorMsg
     = Toggle
@@ -20,11 +15,11 @@ type DateSelectorMsg
     | Reset
     | Select Date.Date
 
-dateSelectWidget : Model -> (DateSelectorMsg -> msg) -> Html msg
-dateSelectWidget model msgWrapper =
+dateSelectWidget : Date.Date -> Maybe Date.Date -> (DateSelectorMsg -> msg) -> Html msg
+dateSelectWidget today maybeSelectorValue msgWrapper =
   let
 
-    calendarDay = Maybe.withDefault model.today model.dateSelector
+    calendarDay = Maybe.withDefault today maybeSelectorValue
 
     start = Date.floor Date.Week (Date.floor Date.Month calendarDay)
 
@@ -52,7 +47,7 @@ dateSelectWidget model msgWrapper =
 
         dayClass : String
         dayClass =
-          if dayDate == model.today then
+          if dayDate == today then
             "today"
           else
             ""
@@ -78,13 +73,13 @@ dateSelectWidget model msgWrapper =
       let
         disableReset : Date.Date -> Bool
         disableReset day =
-          Date.month day == Date.month model.today
-          && Date.year day == Date.year model.today
+          Date.month day == Date.month today
+          && Date.year day == Date.year today
 
       in
-      case model.dateSelector of
+      case maybeSelectorValue of
           Just date ->
-            div [ id "date-selector-popup" ]
+            div [ class "date-selector-popup" ]
               [ div [ class "controls" ]
                 [ button [ onClick (msgWrapper PrevYear), class "button", type_ "button" ] [ text "<<"]
                 , button [ onClick (msgWrapper PrevMonth), class "button", type_ "button" ] [ text "<"]
@@ -93,7 +88,7 @@ dateSelectWidget model msgWrapper =
                 , button [ onClick (msgWrapper NextYear), class "button", type_ "button" ] [ text ">>"]
                 ]
               , h6 [] [ text <| Date.format "MMMM y" date ]
-              , table [ class "table is-bordered", id "date-selector" ]
+              , table [ class "table is-bordered date-selector" ]
                   [ thead []
                     [ tr []
                       [ th [] [ text "M" ]

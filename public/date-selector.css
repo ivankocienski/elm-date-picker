@@ -1,36 +1,37 @@
-#date-selector-popup {
+.date-selector-popup {
   position: absolute;
   z-index: 1000;
   background-color: #fff;
   padding: 0.5rem;
   border: 1px solid #ddd;
+  box-shadow: 5px 5px 6px #00000055;
 }
 
-#date-selector-popup h6 {
+.date-selector-popup h6 {
   text-align: center;
   padding: 0.25em 0;
   font-weight: bold;
 }
 
-#date-selector-popup .controls {
+.date-selector-popup .controls {
   display: flex;
   flex-wrap: nowrap;
   justify-content: space-between;
 }
 
-#date-selector td, #date-selector th{
+.date-selector-popup .date-selector td, .date-selector-popup .date-selector th{
   text-align: center;
 }
 
-#date-selector td.current:hover {
+.date-selector-popup .date-selector td.current:hover {
   background-color: #ccc;
   cursor: pointer;
 }
 
-#date-selector th {
+.date-selector-popup .date-selector th {
   background-color: #eee;
 }
 
-#date-selector td.today {
+.date-selector-popup .date-selector td.today {
   background-color: #99f;
 }

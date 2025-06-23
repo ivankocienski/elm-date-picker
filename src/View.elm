@@ -1,11 +1,11 @@
 module View exposing (renderPageBody, titleForPage)
 
-import Model exposing (Model, TimeBlock)
+import Model exposing (Model)
 import Message exposing (Msg(..))
 
-import Html exposing (Html, h1, text, hr, h2, form, fieldset, label, input, button, table, thead, tbody, tr, th, td, p, main_, div, textarea, ul, li, a, i, span, h6)
-import Html.Attributes exposing (type_, value, disabled, class, placeholder, style, id)
-import Html.Events exposing (onSubmit, onInput, onClick)
+import Html exposing (Html, h1, text, hr, h2, form, fieldset, label, input, button, p, main_, div, pre)
+import Html.Attributes exposing (type_, value, disabled, class, placeholder)
+import Html.Events exposing (onSubmit, onInput)
 import Date
 import Html.Attributes exposing (placeholder)
 import Bits.Form as Form
@@ -17,35 +17,26 @@ isValidDateValue value =
     Ok _ -> True
     Err _ -> False
 
-timeBlockForm : Model -> Html Msg
-timeBlockForm model =
+demoFormWidget : Model -> Html Msg
+demoFormWidget model =
   let
-    durationValue = Form.formValue model.timeBlockForm "duration" ""
-    dateValue = Form.formValue model.timeBlockForm "date" ""
-    descriptionValue = Form.formValue model.timeBlockForm "description" ""
+    startDateValue = Form.formValue model.demoForm "startDate" ""
+
+    endDateValue = Form.formValue model.demoForm "endDate" ""
+
+    titleValue = Form.formValue model.demoForm "title" ""
 
     submitDisableValue : Bool
     submitDisableValue =
-      (String.length(descriptionValue) == 0)
-      || (not (isValidDateValue dateValue))
+      (String.length(titleValue) == 0)
+      || (not (isValidDateValue startDateValue))
+      || (not (isValidDateValue endDateValue))
+
   in
-  form [ onSubmit AddTimeBlockSubmit, class "form" ]
+  form [ onSubmit AddDemoDataSubmit, class "form" ]
   [ fieldset [ class "field is-horizontal" ]
-    [ div [ class "field-label" ] [ label [ class "label" ] [ text "Duration" ] ]
-    , div [ class "field-body" ]
-      [ div [ class "control" ]
-        [ input
-          [ class "input"
-          , type_ "text"
-          , onInput (FormUpdateValue "duration")
-          , value durationValue
-          ]
-          []
-        ]
-      ]
-    ]
-  , fieldset [ class "field is-horizontal" ]
-    [ div [ class "field-label" ] [ label [ class "label" ] [ text "Date" ] ]
+    -- start date
+    [ div [ class "field-label" ] [ label [ class "label" ] [ text "Start Date" ] ]
     , div [ class "field-body" ]
       [ div [ class "field has-addons" ]
         [ div [ class "control" ]
@@ -53,23 +44,45 @@ timeBlockForm model =
             [ class "input"
             , type_ "text"
             , onInput (FormUpdateValue "date")
-            , value dateValue, placeholder "YYYY-MM-DD"
+            , value startDateValue, placeholder "YYYY-MM-DD"
             ]
             []
           ]
-        , div [ class "control" ] [ dateSelectWidget model DateSelector]
+        , div [ class "control" ] [ dateSelectWidget model.today model.startDateSelector StartDateSelector]
         ]
       ]
     ]
-  , fieldset [ class "field" ]
-    [ label [ class "label" ] [ text "Description" ]
-    , div [ class "control" ]
-      [ textarea
-        [ class "textarea"
-        , onInput (FormUpdateValue "description")
-        , value descriptionValue ]
-        []
+  , fieldset [ class "field is-horizontal" ]
+    -- end date
+    [ div [ class "field-label" ] [ label [ class "label" ] [ text "End Date" ] ]
+    , div [ class "field-body" ]
+      [ div [ class "field has-addons" ]
+        [ div [ class "control" ]
+          [ input
+            [ class "input"
+            , type_ "text"
+            , onInput (FormUpdateValue "date")
+            , value endDateValue, placeholder "YYYY-MM-DD"
+            ]
+            []
+          ]
+        , div [ class "control" ] [ dateSelectWidget model.today model.endDateSelector EndDateSelector]
+        ]
       ]
+    ]
+  , fieldset [ class "field is-horizontal" ]
+    -- title
+    [ label [ class "label" ] [ text "Title" ]
+    , div [ class "control" ]
+          [ input
+            [ class "input"
+            , type_ "text"
+            , onInput (FormUpdateValue "date")
+            , value titleValue
+            , placeholder "Title value"
+            ]
+            []
+          ]
     ]
   , fieldset [ class "field" ]
     [ p [] [ text (if submitDisableValue then "invalid" else "very valid")]
@@ -79,34 +92,11 @@ timeBlockForm model =
         , type_ "submit"
         , disabled submitDisableValue
         ]
-        [ text "Log!" ]
+        [ text "Submit!" ]
       ]
     ]
   ]
 
-timeBlockList : Model -> Html Msg
-timeBlockList model =
-  let
-    timeBlockItem : TimeBlock -> Html Msg
-    timeBlockItem item =
-      tr []
-        [ td [] [ text (String.fromInt item.duration) ]
-        , td [] [ text (Date.toIsoString item.date) ]
-        , td [] [ text item.description ]
-        ]
-
-  in
-  table [ class "table" ]
-  [ thead []
-    [ tr []
-      [ th [] [ text "duration" ]
-      , th [] [ text "date" ]
-      , th [] [ text "description" ]
-      ]
-    ]
-  , tbody []
-    (List.map timeBlockItem model.timeBlocks)
-  ]
 
 --
 -- exported
@@ -115,47 +105,16 @@ timeBlockList model =
 
 titleForPage : Model -> String
 titleForPage _ =
-  "Title"
-
-timeAsHuman : Int -> String
-timeAsHuman total =
-  let
-    minutes =
-      modBy 60 total
-
-    hours =
-      total // 60
-
-    minuteString =
-      if minutes > 0 then ((String.fromInt minutes) ++ " minutes") else ""
-
-    hourString =
-      if hours > 0 then ((String.fromInt hours) ++ " hours") else ""
-  in
-  List.foldl (++) ""
-    <| List.intersperse " and "
-    <| List.filter (\v -> (String.length v) > 0)
-    <| [ minuteString, hourString ]
-
+  "DatePicker Demo"
 
 renderPageBody: Model -> List (Html Msg)
 renderPageBody model =
-  let
-    totalTimeSpent : String
-    totalTimeSpent =
-      timeAsHuman
-        <| List.foldl (\item total -> total + item.duration) 0 model.timeBlocks
-
-  in
   [ main_ [ class "container" ]
-    [ h1 [ class "title" ] [ text "TimeBlocks" ]
-    , h2 [ class "subtitle" ] [ text ("total time spent: " ++ totalTimeSpent)]
-    -- , p [] [ text ("today=" ++ (Date.toIsoString model.today)) ]
-    , timeBlockList model
-
+    [ h1 [ class "title" ] [ text "DatePicker Demo Form" ]
+    , demoFormWidget model
     , hr [] []
-    , h2 [ class "subtitle" ] [ text "Add new Timeblock" ]
-    , timeBlockForm model
+    , h2 [ class "title" ] [ text "Output" ]
+    , pre [] [ text model.output ]
     ]
   ]
 

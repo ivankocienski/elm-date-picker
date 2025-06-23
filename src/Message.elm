@@ -7,8 +7,9 @@ import Bits.DatePicker exposing (DateSelectorMsg(..))
 
 type Msg
     = LinkClicked Browser.UrlRequest
-    | ReceiveDate Date.Date
     | UrlChanged Url.Url
+    | ReceiveDate Date.Date
     | FormUpdateValue String String
-    | AddTimeBlockSubmit
-    | DateSelector DateSelectorMsg
+    | AddDemoDataSubmit
+    | StartDateSelector DateSelectorMsg
+    | EndDateSelector DateSelectorMsg
